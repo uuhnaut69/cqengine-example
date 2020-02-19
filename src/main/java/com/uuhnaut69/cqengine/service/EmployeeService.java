@@ -23,6 +23,14 @@ public interface EmployeeService {
     Set<Employee> findEmployeeById(int id);
 
     /**
+     * FInd employee by name start with
+     *
+     * @param param
+     * @return Set {@link Employee}
+     */
+    Set<Employee> findEmployeeHasNameStartWith(String param);
+
+    /**
      * Find employee by job title
      *
      * @param param

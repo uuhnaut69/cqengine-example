@@ -3,7 +3,8 @@ package com.uuhnaut69.cqengine.service.impl;
 import com.googlecode.cqengine.ConcurrentIndexedCollection;
 import com.googlecode.cqengine.IndexedCollection;
 import com.googlecode.cqengine.index.hash.HashIndex;
-import com.googlecode.cqengine.index.navigable.NavigableIndex;
+import com.googlecode.cqengine.index.radix.RadixTreeIndex;
+import com.googlecode.cqengine.index.unique.UniqueIndex;
 import com.googlecode.cqengine.query.Query;
 import com.uuhnaut69.cqengine.model.Employee;
 import com.uuhnaut69.cqengine.service.EmployeeService;
@@ -18,7 +19,7 @@ import java.nio.file.Paths;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.googlecode.cqengine.query.QueryFactory.equal;
+import static com.googlecode.cqengine.query.QueryFactory.*;
 
 @Slf4j
 @Service
@@ -28,8 +29,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void generateData(String csvPath) throws IOException {
-        employees.addIndex(NavigableIndex.onAttribute(Employee.ID));
-        employees.addIndex(HashIndex.onAttribute(Employee.NAME));
+        employees.addIndex(UniqueIndex.onAttribute(Employee.ID));
+        employees.addIndex(RadixTreeIndex.onAttribute(Employee.NAME));
         employees.addIndex(HashIndex.onAttribute(Employee.JOB_TITLE));
         CsvReader csvReader = new CsvReader();
         csvReader.setContainsHeader(true);
@@ -51,12 +52,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Set<Employee> findEmployeeById(int id) {
         Query<Employee> idQuery = equal(Employee.ID, id);
-        return employees.retrieve(idQuery).stream().collect(Collectors.toSet());
+        return employees.retrieve(idQuery, queryOptions(orderBy(descending(Employee.NAME)))).stream().collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Employee> findEmployeeHasNameStartWith(String param) {
+        Query<Employee> startWithQuery = startsWith(Employee.NAME, param);
+        return employees.retrieve(startWithQuery).stream().collect(Collectors.toSet());
     }
 
     @Override
     public Set<Employee> findEmployeeByJobTitle(String param) {
         Query<Employee> jobTitleQuery = equal(Employee.JOB_TITLE, param);
-        return employees.retrieve(jobTitleQuery).stream().collect(Collectors.toSet());
+        return employees.retrieve(jobTitleQuery, queryOptions(orderBy(descending(Employee.NAME)))).stream().collect(Collectors.toSet());
     }
 }

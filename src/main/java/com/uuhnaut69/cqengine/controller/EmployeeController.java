@@ -25,6 +25,11 @@ public class EmployeeController {
         return employeeService.findEmployeeById(id);
     }
 
+    @GetMapping("/autocomplete")
+    public Set<Employee> autocomplete(@RequestParam(value = "name", defaultValue = "") String name) {
+        return employeeService.findEmployeeHasNameStartWith(name);
+    }
+
     @GetMapping("/by-job-title")
     public Set<Employee> findEmployeeByJobTitle(@RequestParam(name = "param") String param) {
         return employeeService.findEmployeeByJobTitle(param);
