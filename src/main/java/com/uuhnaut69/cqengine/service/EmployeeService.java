@@ -1,9 +1,9 @@
 package com.uuhnaut69.cqengine.service;
 
-import com.googlecode.cqengine.resultset.ResultSet;
 import com.uuhnaut69.cqengine.model.Employee;
 
 import java.io.IOException;
+import java.util.Set;
 
 public interface EmployeeService {
 
@@ -18,16 +18,16 @@ public interface EmployeeService {
      * Find employee by id
      *
      * @param id
-     * @return ResultSet {@link Employee}
+     * @return Set {@link Employee}
      */
-    ResultSet<Employee> findEmployeeById(int id);
+    Set<Employee> findEmployeeById(int id);
 
     /**
      * Find employee by job title
      *
      * @param param
-     * @return ResultSet {@link Employee}
+     * @return Set {@link Employee}
      */
-    ResultSet<Employee> findEmployeeByJobTitle(String param);
+    Set<Employee> findEmployeeByJobTitle(String param);
 
 }

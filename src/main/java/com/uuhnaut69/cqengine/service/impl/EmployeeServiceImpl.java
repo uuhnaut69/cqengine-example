@@ -2,7 +2,9 @@ package com.uuhnaut69.cqengine.service.impl;
 
 import com.googlecode.cqengine.ConcurrentIndexedCollection;
 import com.googlecode.cqengine.IndexedCollection;
-import com.googlecode.cqengine.resultset.ResultSet;
+import com.googlecode.cqengine.index.hash.HashIndex;
+import com.googlecode.cqengine.index.navigable.NavigableIndex;
+import com.googlecode.cqengine.query.Query;
 import com.uuhnaut69.cqengine.model.Employee;
 import com.uuhnaut69.cqengine.service.EmployeeService;
 import de.siegmar.fastcsv.reader.CsvContainer;
@@ -13,7 +15,10 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static com.googlecode.cqengine.query.QueryFactory.equal;
 
 @Slf4j
 @Service
@@ -23,6 +28,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void generateData(String csvPath) throws IOException {
+        employees.addIndex(NavigableIndex.onAttribute(Employee.ID));
+        employees.addIndex(HashIndex.onAttribute(Employee.NAME));
+        employees.addIndex(HashIndex.onAttribute(Employee.JOB_TITLE));
         CsvReader csvReader = new CsvReader();
         csvReader.setContainsHeader(true);
         CsvContainer csv = csvReader.read(Paths.get(csvPath), StandardCharsets.UTF_8);
@@ -36,15 +44,19 @@ public class EmployeeServiceImpl implements EmployeeService {
                                 .agency(csvRow.getField("Agency"))
                                 .build())
         );
+        Query<Employee> idQuery = equal(Employee.ID, 2);
+        employees.retrieve(idQuery).forEach(System.out::println);
     }
 
     @Override
-    public ResultSet<Employee> findEmployeeById(int id) {
-        return null;
+    public Set<Employee> findEmployeeById(int id) {
+        Query<Employee> idQuery = equal(Employee.ID, id);
+        return employees.retrieve(idQuery).stream().collect(Collectors.toSet());
     }
 
     @Override
-    public ResultSet<Employee> findEmployeeByJobTitle(String param) {
-        return null;
+    public Set<Employee> findEmployeeByJobTitle(String param) {
+        Query<Employee> jobTitleQuery = equal(Employee.JOB_TITLE, param);
+        return employees.retrieve(jobTitleQuery).stream().collect(Collectors.toSet());
     }
 }
