@@ -51,6 +51,11 @@
             <artifactId>cqengine</artifactId>
             <version>3.4.0</version>
         </dependency>
+        <dependency>
+            <groupId>de.siegmar</groupId>
+            <artifactId>fastcsv</artifactId>
+            <version>1.0.3</version>
+        </dependency>
     </dependencies>
 
     <build>
