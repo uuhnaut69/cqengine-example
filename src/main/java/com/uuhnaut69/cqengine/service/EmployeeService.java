@@ -15,7 +15,7 @@ public interface EmployeeService {
     void generateData(String csvPath) throws IOException;
 
     /**
-     * Find employee by id
+     * Find employee by id using cq engine
      *
      * @param id
      * @return Set {@link Employee}
@@ -23,7 +23,7 @@ public interface EmployeeService {
     Set<Employee> findEmployeeById(int id);
 
     /**
-     * FInd employee by name start with
+     * FInd employee by name start with using cq engine
      *
      * @param param
      * @return Set {@link Employee}
@@ -31,11 +31,19 @@ public interface EmployeeService {
     Set<Employee> findEmployeeHasNameStartWith(String param);
 
     /**
-     * Find employee by job title
+     * Find employee by job title using cq engine
      *
      * @param param
      * @return Set {@link Employee}
      */
     Set<Employee> findEmployeeByJobTitle(String param);
+
+    /**
+     * Find employee by job title using normal
+     *
+     * @param param
+     * @return Set {@link Employee}
+     */
+    Set<Employee> normalFindEmployeeJobTitle(String param);
 
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,45 +26,52 @@ import static com.googlecode.cqengine.query.QueryFactory.*;
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
-    IndexedCollection<Employee> employees = new ConcurrentIndexedCollection<>();
+    IndexedCollection<Employee> employeesCq = new ConcurrentIndexedCollection<>();
+    Set<Employee> employees = new HashSet<>();
 
     @Override
     public void generateData(String csvPath) throws IOException {
-        employees.addIndex(UniqueIndex.onAttribute(Employee.ID));
-        employees.addIndex(RadixTreeIndex.onAttribute(Employee.NAME));
-        employees.addIndex(HashIndex.onAttribute(Employee.JOB_TITLE));
+        employeesCq.addIndex(UniqueIndex.onAttribute(Employee.ID));
+        employeesCq.addIndex(RadixTreeIndex.onAttribute(Employee.NAME));
+        employeesCq.addIndex(HashIndex.onAttribute(Employee.JOB_TITLE));
         CsvReader csvReader = new CsvReader();
         csvReader.setContainsHeader(true);
         CsvContainer csv = csvReader.read(Paths.get(csvPath), StandardCharsets.UTF_8);
         csv.getRows().forEach(csvRow ->
-                employees.add(
-                        Employee.builder()
-                                .id(Integer.valueOf(csvRow.getField("Id")))
-                                .employeeName(csvRow.getField("EmployeeName"))
-                                .jobTitle(csvRow.getField("JobTitle"))
-                                .year(csvRow.getField("Year"))
-                                .agency(csvRow.getField("Agency"))
-                                .build())
+                {
+                    Employee employee = Employee.builder()
+                            .id(Integer.parseInt(csvRow.getField("Id")))
+                            .employeeName(csvRow.getField("EmployeeName"))
+                            .jobTitle(csvRow.getField("JobTitle"))
+                            .year(csvRow.getField("Year"))
+                            .agency(csvRow.getField("Agency"))
+                            .build();
+                    employeesCq.add(employee);
+                    employees.add(employee);
+                }
         );
-        Query<Employee> idQuery = equal(Employee.ID, 2);
-        employees.retrieve(idQuery).forEach(System.out::println);
     }
 
     @Override
     public Set<Employee> findEmployeeById(int id) {
         Query<Employee> idQuery = equal(Employee.ID, id);
-        return employees.retrieve(idQuery, queryOptions(orderBy(descending(Employee.NAME)))).stream().collect(Collectors.toSet());
+        return employeesCq.retrieve(idQuery, queryOptions(orderBy(descending(Employee.NAME)))).stream().collect(Collectors.toSet());
     }
 
     @Override
     public Set<Employee> findEmployeeHasNameStartWith(String param) {
         Query<Employee> startWithQuery = startsWith(Employee.NAME, param);
-        return employees.retrieve(startWithQuery).stream().collect(Collectors.toSet());
+        return employeesCq.retrieve(startWithQuery).stream().collect(Collectors.toSet());
     }
 
     @Override
     public Set<Employee> findEmployeeByJobTitle(String param) {
         Query<Employee> jobTitleQuery = equal(Employee.JOB_TITLE, param);
-        return employees.retrieve(jobTitleQuery, queryOptions(orderBy(descending(Employee.NAME)))).stream().collect(Collectors.toSet());
+        return employeesCq.retrieve(jobTitleQuery, queryOptions(orderBy(descending(Employee.NAME)))).stream().collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Employee> normalFindEmployeeJobTitle(String param) {
+        return employees.stream().filter(employee -> employee.getJobTitle().equals(param)).collect(Collectors.toSet());
     }
 }
